@@ -16,6 +16,33 @@ Many legacy systems (like IBM iSeries) output logs to local files in proprietary
 3.  **Injects** Trace IDs and Span IDs from log content into OTel context.
 4.  **Exports** structured logs to any OTLP-compliant backend (Jaeger, Grafana Tempo, Splunk, etc.).
 
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    Legacy[Legacy iSeries App] -->|Writes Logs| LogFile[Log File / PVC]
+    
+    subgraph "iSeries OTel Bridge Pod"
+        Tailer[Spring Integration Tailer] -->|Stream| Aggregator[Line Aggregator]
+        Aggregator -->|Chunks| BatchJob[Spring Batch Job]
+        
+        subgraph "Batch Processing"
+            Reader[Multiline Reader] -->|Raw Record| Processor[Grok Processor]
+            Processor -->|Structured Data| OTelWriter[OTel Writer]
+        end
+        
+        BatchJob --> Reader
+    end
+    
+    OTelWriter -->|OTLP gRPC| Collector[OTel Collector]
+    Collector -->|Export| Backend[Jaeger / Splunk / Tempo]
+
+    style Legacy fill:#f9f,stroke:#333,stroke-width:2px
+    style LogFile fill:#ff9,stroke:#333,stroke-width:2px
+    style OTelWriter fill:#bbf,stroke:#333,stroke-width:2px
+    style Collector fill:#bbf,stroke:#333,stroke-width:2px
+```
+
 ## ✨ Key Features
 
 *   **Reliability**: Persistent file tailing (handles rotation/restarts) and Spring Batch chunk processing.
