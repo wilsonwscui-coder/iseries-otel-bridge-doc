@@ -1,0 +1,12 @@
+5770SS1 V7R4M0  Job Log                  APPUSER/MYJOB/012347  10/27/23  08:15:00
+MSGID      TYPE       SEV  DATE       TIME       FROM PGM     INST     TO PGM       INST
+CPF9898    DIAG       40   10/27/23   08:15:01   QCMD         0200     MYPGM        0100
+  Message: Error occurred during processing
+  Cause: RPG program MYLIB/MYPGM encountered an unmonitored exception
+MCH1210    ESCAPE     40   10/27/23   08:15:01   MYPGM        0150     MYPGM        0100
+  Message: Receiver value too small to hold result
+  From module: MYPGM, procedure: calculateTotal, statement: 450
+CPF9999    ESCAPE     40   10/27/23   08:15:02   MYPGM        0100     QCMD         0200
+  Message: Function check. MCH1210 unmonitored by MYPGM at statement 0450
+CPC1218    COMP       00   10/27/23   08:30:00   QBATCH       0000     QBATCH       0000
+  Message: Job 012347/APPUSER/MYJOB completed abnormally

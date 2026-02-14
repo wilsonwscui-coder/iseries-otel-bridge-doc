@@ -1,0 +1,11 @@
+2023-10-27 08:00:00 CPI1125 QSYSOPR Job 012345/QSYS/SCPF started for IPL
+2023-10-27 08:05:00 CPI0947 QSYSOPR STRTCP command completed successfully
+2023-10-27 08:10:00 CPI8859 QSYSOPR Subsystem QINTER started on system PROD400
+2023-10-27 08:15:00 CPI8859 QSYSOPR Subsystem QBATCH started on system PROD400
+2023-10-27 09:00:00 CPF1816 QSYSOPR Disk unit 1 in ASP 1 is nearing storage threshold
+  Capacity: 85% used, 15% available
+  Total size: 500GB, Used: 425GB
+2023-10-27 10:30:00 CPA4005 QSYSOPR Device TAP01 requires operator intervention
+  Action required: Load tape volume VOL001 on device TAP01
+2023-10-27 12:00:00 CPC2196 QSYSOPR SAVLIB completed for library PRODLIB to device TAP01
+2023-10-27 15:00:00 CPF1269 QSYSOPR User BADUSER has been disabled after 5 failed sign-on attempts

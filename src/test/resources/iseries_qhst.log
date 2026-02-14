@@ -1,0 +1,12 @@
+2023-10-27 08:00:01 CPI1125 Job 012345/QSYS/QSTRUPJD started on 10/27/23 at 08:00:01 in subsystem QCTL
+2023-10-27 08:00:05 CPF1124 Job 012345/QSYS/QSTRUPJD reached end of data
+2023-10-27 08:01:00 CPC1221 Job 012346/QPGMR/NIGHTBATCH submitted to job queue QBATCH
+2023-10-27 08:05:30 CPC2191 Object MYLIB/MYFILE type *FILE saved successfully
+2023-10-27 08:10:15 CPF9801 Object BADLIB/NOFILE in library *LIBL not found
+  Additional diagnostic information:
+  Library list searched: QSYS QSYS2 QUSRSYS QGPL MYLIB
+2023-10-27 08:15:00 CPI2209 Library QTEMP created for job 012347/APPUSER/MYJOB
+2023-10-27 08:20:00 CPD0034 Parameters passed on CALL do not match those required
+  Expected 3 parameters but received 2
+  Program: MYLIB/MYPGM
+2023-10-27 08:25:45 CPC1218 Job 012346/QPGMR/NIGHTBATCH completed normally

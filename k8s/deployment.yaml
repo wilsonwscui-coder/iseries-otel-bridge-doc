@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iseries-otel-bridge
+  namespace: observability
+  labels:
+    app: iseries-otel-bridge
+spec:
+  replicas: 1 # Typically 1 unless the file is shared (but batch jobs are often single-reader)
+  selector:
+    matchLabels:
+      app: iseries-otel-bridge
+  template:
+    metadata:
+      labels:
+        app: iseries-otel-bridge
+    spec:
+      containers:
+      - name: bridge
+        image: <YOUR_AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/iseries-otel-bridge:latest
+        imagePullPolicy: Always
+        env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://otel-collector:4317" # Update this to your OTel Collector service
+        - name: OTEL_SERVICE_NAME
+          value: "iseries-log-bridge"
+        - name: INPUT_FILE_PATH_TAIL
+          value: "/var/log/iseries/app.log"
+        volumeMounts:
+        - name: log-volume
+          mountPath: /var/log/iseries
+          readOnly: true
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: log-volume
+        persistentVolumeClaim:
+          claimName: iseries-logs-pvc # Assume logs are shared via PVC
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iseries-otel-bridge
+  namespace: observability
+spec:
+  selector:
+    app: iseries-otel-bridge
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
