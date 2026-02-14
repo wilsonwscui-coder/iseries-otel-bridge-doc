@@ -95,6 +95,13 @@
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
+### Non-Functional Requirements (Constitution)
+
+- **NFR-001 (Reliability)**: Must handle transient failures without data loss.
+- **NFR-002 (Observability)**: Must expose internal health metrics.
+- **NFR-003 (Deploy)**: Must be containerized and stateless.
+- **NFR-004 (Config)**: Log patterns/endpoints must be configurable externally.
+
 ### Key Entities *(include if feature involves data)*
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]

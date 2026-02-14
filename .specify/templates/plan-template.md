@@ -31,7 +31,11 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+1. **Reliability**: No data loss on transient failures; at-least-once delivery?
+2. **Observability**: Exposes internal metrics/logs? Distinct from user logs?
+3. **Configuration**: Grok/endpoints configurable without code changes?
+4. **Cloud-Native**: Stateless, SIGTERM handling, Docker/K8s ready?
+5. **Standards**: OTel semantic conventions used? Trace context injection?
 
 ## Project Structure
 

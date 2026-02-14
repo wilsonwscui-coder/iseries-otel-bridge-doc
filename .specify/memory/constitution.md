@@ -1,50 +1,46 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+- Version: 1.0.0 (Verified)
+- Templates requiring updates: ✅ plan-template.md, ✅ spec-template.md, ✅ tasks-template.md
+- Follow-up: None
+-->
+# iSeries-Otel-Bridge Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Reliability & Data Integrity
+The bridge must never lose valid log data due to transient failures. It MUST implement robust error handling (e.g., skip bad lines with logging, retry export failures) and ensure at-least-once delivery semantics where possible. Persistent buffering (e.g., file tailing with position tracking) is preferred over in-memory only solutions.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Observability First
+The bridge is an observability tool and must itself be observable. It MUST expose internal metrics (log throughput, parsing error rates, export latency) and its own internal logs must be structured and distinct from the processed user logs.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Configuration Over Code
+Log patterns (Grok), file paths, and OTLP endpoints MUST be configurable via environment variables or external configuration files (Spring properties). Recompilation should not be required for standard operational changes like updating a log format or changing the collector endpoint.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Cloud-Native Deployment
+The application MUST be packaged as a stateless container (Docker) and support orchestration (Kubernetes). It MUST handle SIGTERM for graceful shutdowns to flush buffers and ensure file handles are closed properly. Deployment manifests (Helm/Kustomize/YAML) are a required deliverable.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. OpenTelemetry Standards
+All exported data MUST strictly adhere to OpenTelemetry semantic conventions. Trace context injection (extracting trace_id/span_id from logs) and structured logging (mapping log attributes to resource/log attributes) are first-class citizens and MUST be implemented where log formats allow.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Technology Standards
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- **Language:** Java 17+ (LTS)
+- **Framework:** Spring Boot 3.x & Spring Batch
+- **Build System:** Maven
+- **Testing:** JUnit 5, Mockito, & Spring Boot Test (Coverage > 80% target)
+- **Containerization:** Docker (Multi-stage builds required)
+- **CI/CD:** GitHub Actions (implied)
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Development Workflow
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- **Testing:** All changes MUST be verified with `mvn test`. Integration tests in `src/test/java/com/iseries/otel/bridge/` are mandatory for new parsing logic.
+- **Documentation:** `README.md` and `DEPLOY_EKS.md` MUST be kept in sync with code changes.
+- **Commits:** Follow conventional commit messages (feat:, fix:, docs:, chore:).
+- **Code Style:** Follow Google Java Style (enforced via Checkstyle/Spotless if added).
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution defines the architectural constraints and non-negotiable rules for the iSeries-Otel-Bridge project. Amendments require a Pull Request with explicit justification and approval from core maintainers. Runtime guidance for agents can be found in `AGENTS.md`.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-02-15 | **Last Amended**: 2026-02-15
