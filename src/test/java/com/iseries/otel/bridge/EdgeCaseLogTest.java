@@ -1,9 +1,19 @@
 package com.iseries.otel.bridge;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.*;
@@ -15,35 +25,23 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 /**
- * Integration tests for edge case log handling.
- * Validates that the pipeline gracefully handles empty messages,
- * special characters, Unicode content, long lines, and unparseable input.
+ * Integration tests for edge case log handling. Validates that the pipeline gracefully handles
+ * empty messages, special characters, Unicode content, long lines, and unparseable input.
  */
-@SpringBootTest(args = "--spring.batch.job.enabled=false", properties = "spring.main.allow-bean-definition-overriding=true")
+@SpringBootTest(
+        args = "--spring.batch.job.enabled=false",
+        properties = "spring.main.allow-bean-definition-overriding=true")
 class EdgeCaseLogTest {
 
-    @Autowired
-    private JobLauncher jobLauncher;
+    @Autowired private JobLauncher jobLauncher;
 
-    @Autowired
-    private Job logConversionJob;
+    @Autowired private Job logConversionJob;
 
-    @Autowired
-    private SdkLoggerProvider sdkLoggerProvider;
+    @Autowired private SdkLoggerProvider sdkLoggerProvider;
 
-    private static final List<LogRecordData> EXPORTED_LOGS = Collections.synchronizedList(new ArrayList<>());
+    private static final List<LogRecordData> EXPORTED_LOGS =
+            Collections.synchronizedList(new ArrayList<>());
 
     @TestConfiguration
     static class TestConfig {
@@ -80,24 +78,29 @@ class EdgeCaseLogTest {
         File sampleFile = new ClassPathResource("edge_cases.log").getFile();
 
         // Standard pattern that will succeed for valid lines and fallback for others
-        String grokPattern = "(?s)%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}";
+        String grokPattern =
+                "(?s)%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}";
         String filePattern = "^\\d{4}-\\d{2}-\\d{2}";
 
-        JobParameters params = new JobParametersBuilder()
-                .addString("input.file.path", sampleFile.getAbsolutePath())
-                .addString("input.file.pattern", filePattern)
-                .addString("parser.grok.pattern", grokPattern)
-                .addLong("timestamp", System.currentTimeMillis())
-                .toJobParameters();
+        JobParameters params =
+                new JobParametersBuilder()
+                        .addString("input.file.path", sampleFile.getAbsolutePath())
+                        .addString("input.file.pattern", filePattern)
+                        .addString("parser.grok.pattern", grokPattern)
+                        .addLong("timestamp", System.currentTimeMillis())
+                        .toJobParameters();
 
         JobExecution execution = jobLauncher.run(logConversionJob, params);
 
-        assertEquals(BatchStatus.COMPLETED, execution.getStatus(),
+        assertEquals(
+                BatchStatus.COMPLETED,
+                execution.getStatus(),
                 "Job should complete even with edge case input");
         sdkLoggerProvider.forceFlush().join(5, TimeUnit.SECONDS);
 
         // Should not crash - all records should be processed
-        assertTrue(EXPORTED_LOGS.size() >= 8,
+        assertTrue(
+                EXPORTED_LOGS.size() >= 8,
                 "Should process at least 8 log entries, got: " + EXPORTED_LOGS.size());
     }
 
@@ -105,15 +108,17 @@ class EdgeCaseLogTest {
     void testSpecialCharactersPreserved() throws Exception {
         File sampleFile = new ClassPathResource("edge_cases.log").getFile();
 
-        String grokPattern = "(?s)%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}";
+        String grokPattern =
+                "(?s)%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}";
         String filePattern = "^\\d{4}-\\d{2}-\\d{2}";
 
-        JobParameters params = new JobParametersBuilder()
-                .addString("input.file.path", sampleFile.getAbsolutePath())
-                .addString("input.file.pattern", filePattern)
-                .addString("parser.grok.pattern", grokPattern)
-                .addLong("timestamp", System.currentTimeMillis() + 1)
-                .toJobParameters();
+        JobParameters params =
+                new JobParametersBuilder()
+                        .addString("input.file.path", sampleFile.getAbsolutePath())
+                        .addString("input.file.pattern", filePattern)
+                        .addString("parser.grok.pattern", grokPattern)
+                        .addLong("timestamp", System.currentTimeMillis() + 1)
+                        .toJobParameters();
 
         JobExecution execution = jobLauncher.run(logConversionJob, params);
 
@@ -129,7 +134,8 @@ class EdgeCaseLogTest {
         // Find the Unicode log (4th entry, index 3)
         LogRecordData unicodeLog = EXPORTED_LOGS.get(3);
         String unicodeBody = unicodeLog.getBody().asString();
-        assertTrue(unicodeBody.contains("cafe") || unicodeBody.contains("café"),
+        assertTrue(
+                unicodeBody.contains("cafe") || unicodeBody.contains("café"),
                 "Should handle Unicode content");
     }
 
@@ -137,15 +143,17 @@ class EdgeCaseLogTest {
     void testEmptyMessageHandled() throws Exception {
         File sampleFile = new ClassPathResource("edge_cases.log").getFile();
 
-        String grokPattern = "(?s)%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}";
+        String grokPattern =
+                "(?s)%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}";
         String filePattern = "^\\d{4}-\\d{2}-\\d{2}";
 
-        JobParameters params = new JobParametersBuilder()
-                .addString("input.file.path", sampleFile.getAbsolutePath())
-                .addString("input.file.pattern", filePattern)
-                .addString("parser.grok.pattern", grokPattern)
-                .addLong("timestamp", System.currentTimeMillis() + 2)
-                .toJobParameters();
+        JobParameters params =
+                new JobParametersBuilder()
+                        .addString("input.file.path", sampleFile.getAbsolutePath())
+                        .addString("input.file.pattern", filePattern)
+                        .addString("parser.grok.pattern", grokPattern)
+                        .addLong("timestamp", System.currentTimeMillis() + 2)
+                        .toJobParameters();
 
         JobExecution execution = jobLauncher.run(logConversionJob, params);
 
@@ -163,15 +171,17 @@ class EdgeCaseLogTest {
     void testLongLineHandled() throws Exception {
         File sampleFile = new ClassPathResource("edge_cases.log").getFile();
 
-        String grokPattern = "(?s)%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}";
+        String grokPattern =
+                "(?s)%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}";
         String filePattern = "^\\d{4}-\\d{2}-\\d{2}";
 
-        JobParameters params = new JobParametersBuilder()
-                .addString("input.file.path", sampleFile.getAbsolutePath())
-                .addString("input.file.pattern", filePattern)
-                .addString("parser.grok.pattern", grokPattern)
-                .addLong("timestamp", System.currentTimeMillis() + 3)
-                .toJobParameters();
+        JobParameters params =
+                new JobParametersBuilder()
+                        .addString("input.file.path", sampleFile.getAbsolutePath())
+                        .addString("input.file.pattern", filePattern)
+                        .addString("parser.grok.pattern", grokPattern)
+                        .addLong("timestamp", System.currentTimeMillis() + 3)
+                        .toJobParameters();
 
         JobExecution execution = jobLauncher.run(logConversionJob, params);
 
@@ -181,7 +191,8 @@ class EdgeCaseLogTest {
         // The 5th log entry (index 4) has an extremely long message
         LogRecordData longLog = EXPORTED_LOGS.get(4);
         String body = longLog.getBody().asString();
-        assertTrue(body.length() > 200,
+        assertTrue(
+                body.length() > 200,
                 "Long message should be preserved, got length: " + body.length());
     }
 }

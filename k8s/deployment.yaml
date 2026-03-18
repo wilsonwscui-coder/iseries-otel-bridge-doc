@@ -1,19 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: iseries-otel-bridge
+  name: iseries-otel-bridge-consumer
   namespace: observability
   labels:
     app: iseries-otel-bridge
+    role: consumer
 spec:
-  replicas: 1 # Typically 1 unless the file is shared (but batch jobs are often single-reader)
+  replicas: 3 # Horizontal scaling: multiple consumer pods
   selector:
     matchLabels:
       app: iseries-otel-bridge
+      role: consumer
   template:
     metadata:
       labels:
         app: iseries-otel-bridge
+        role: consumer
     spec:
       containers:
       - name: bridge
@@ -21,15 +24,17 @@ spec:
         imagePullPolicy: Always
         env:
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
-          value: "http://otel-collector:4317" # Update this to your OTel Collector service
+          value: "http://otel-collector:4317"
         - name: OTEL_SERVICE_NAME
           value: "iseries-log-bridge"
-        - name: INPUT_FILE_PATH_TAIL
-          value: "/var/log/iseries/app.log"
-        volumeMounts:
-        - name: log-volume
-          mountPath: /var/log/iseries
-          readOnly: true
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka:29092"
+        - name: KAFKA_TOPIC
+          value: "iseries-logs"
+        - name: KAFKA_CONSUMER_GROUP_ID
+          value: "iseries-log-consumers"
+        - name: ROLE
+          value: "consumer"
         resources:
           requests:
             memory: "512Mi"
@@ -37,19 +42,16 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "500m"
-      volumes:
-      - name: log-volume
-        persistentVolumeClaim:
-          claimName: iseries-logs-pvc # Assume logs are shared via PVC
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: iseries-otel-bridge
+  name: iseries-otel-bridge-consumer
   namespace: observability
 spec:
   selector:
     app: iseries-otel-bridge
+    role: consumer
   ports:
     - protocol: TCP
       port: 8080
